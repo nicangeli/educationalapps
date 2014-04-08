@@ -3,29 +3,30 @@ require 'json'
 
 companies = JSON.parse(IO.read('merged.json'))
 
-merged = []
 
-def find haystack, company
+def find haystack, needle
+    found = []
     haystack.each do |c|
-        if c["company"].eql?(company["company"])
-            return c
+        if c["title"].eql?(needle["title"])
+            found << c
         end
     end
-    return nil
+    return found
 end
 
-companies.each do |company|
-    theCompany = find(merged, company)
-    if not theCompany.nil?
 
-        #add the apps in
-        theCompany['apps'] = theCompany['apps'] + company['apps']
-    else
-        #create a new 
-        merged << company
+companies.each do |company|
+    apps = company["apps"]
+    apps.each do |app|
+        found = find(apps, app)
+        if found.length > 1
+            app['stores'] = ['google', 'ios']
+        end
+        apps.delete(found[1])
     end
 end
 
+
 File.open('global_merged.json', 'w') do |f|
-    f.write(merged.to_json)
+    f.write(companies.to_json)
 end
